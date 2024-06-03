@@ -1,0 +1,160 @@
+<?php
+session_start();
+if (isset($_SESSION['isUserLoggedIn']) && $_SESSION['userType'] === 'gestionnaire') {
+?>
+
+<?php
+include "../../include/config.php";
+
+// Check if the delete button is clicked
+if (isset($_POST['delete_laureate'])) {
+    $laureate_id = $_POST['laureate_id'];
+    // Prepare SQL statement to delete the laureate
+    $delete_stmt = $pdo->prepare("DELETE FROM laureat WHERE Identifiant = ?");
+    // Execute the prepared statement
+    try {
+        $delete_stmt->execute([$laureate_id]);
+        // Redirect back to the same page after deletion
+        header("Location: ".$_SERVER['PHP_SELF']);
+        exit();
+    } catch (PDOException $e) {
+        die("Error: " . $e->getMessage());
+    }
+}
+
+// Check if the accept button is clicked
+if (isset($_POST['accept_laureate'])) {
+    $laureate_id = $_POST['laureate_id'];
+    // Prepare SQL statement to update the laureate
+    $accept_stmt = $pdo->prepare("UPDATE laureat SET valide = 1 WHERE Identifiant = ?");
+    // Execute the prepared statement
+    try {
+        $accept_stmt->execute([$laureate_id]);
+        // Redirect back to the same page after update
+        header("Location: ".$_SERVER['PHP_SELF']);
+        exit();
+    } catch (PDOException $e) {
+        die("Error: " . $e->getMessage());
+    }
+}
+
+$sql = "SELECT Identifiant, nom, Prenom, email, Tel, promotion, Filiere, Etablissement, Fonction, Employeur FROM laureat WHERE valide = 0";
+$stmt = $pdo->prepare($sql);
+
+// Execute the prepared statement
+try {
+    $stmt->execute();
+    // Fetch all laureates
+    $laureates = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Error: " . $e->getMessage());
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Header</title>
+    <?php include "../header.php"; ?>
+    <script>
+        // Function to delete a laureate
+        function deleteLaureate(id) {
+            if (confirm("Are you sure you want to delete this laureate?")) {
+                // Send AJAX request to delete the laureate
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "<?php echo $_SERVER['PHP_SELF']; ?>");
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        // Reload the page after deletion
+                        location.reload();
+                    }
+                };
+                xhr.send("delete_laureate=1&laureate_id=" + id);
+            }
+        }
+
+        // Function to accept a laureate
+        function acceptLaureate(id) {
+            if (confirm("Are you sure you want to accept this laureate?")) {
+                // Send AJAX request to accept the laureate
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "<?php echo $_SERVER['PHP_SELF']; ?>");
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        // Reload the page after acceptance
+                        location.reload();
+                    }
+                };
+                xhr.send("accept_laureate=1&laureate_id=" + id);
+            }
+        }
+    </script>
+    <div class="main_gestioner">
+        <div class="conteur_gestioner_ver">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Promotion</th>
+                        <th>Filière</th>
+                        <th>Etablissement</th>
+                        <th>Fonction</th>
+                        <th>Employeur</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($laureates as $laureate): ?>
+                        <tr>
+                            <td><?php echo $laureate['nom']; ?></td>
+                            <td><?php echo $laureate['Prenom']; ?></td>
+                            <td><?php echo $laureate['email']; ?></td>
+                            <td><?php echo $laureate['Tel']; ?></td>
+                            <td><?php echo $laureate['promotion']; ?></td>
+                            <td><?php echo $laureate['Filiere']; ?></td>
+                            <td><?php echo $laureate['Etablissement']; ?></td>
+                            <td><?php echo $laureate['Fonction']; ?></td>
+                            <td><?php echo $laureate['Employeur']; ?></td>
+                            <td>
+                                <button onclick="deleteLaureate(<?php echo $laureate['Identifiant']; ?>)">Delete</button>
+                                <button onclick="acceptLaureate(<?php echo $laureate['Identifiant']; ?>)">Accept</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <style>
+        .conteur_gestioner {
+            height: 15rem;
+            width: 15rem;
+            background-color: aqua;
+        }
+
+        .main_gestioner {
+            padding-left: 5vw;
+            padding-top: 5rem;
+        }
+    </style>
+</head>
+
+<body>
+</body>
+
+</html>
+<?php
+} else {
+    // Assuming 'gestionnaire' is the user type
+    header("Location: login.php");
+    exit();
+}
+?>

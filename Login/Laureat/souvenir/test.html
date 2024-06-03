@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hover GIF</title>
+    <style>
+        .gif-container {
+            display: inline-block;
+        }
+        .gif-container img {
+            display: block;
+        }
+        .gif-container .gif-static {
+            display: block;
+        }
+        .gif-container .gif-animated {
+            display: none;
+        }
+        .gif-container:hover .gif-static {
+            display: none;
+        }
+        .gif-container:hover .gif-animated {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="gif-container">
+        <img src="ups.png" alt="Static GIF" class="gif-static">
+        <img src="ups.gif" alt="Animated GIF" class="gif-animated">
+    </div>
+</body>
+</html>
